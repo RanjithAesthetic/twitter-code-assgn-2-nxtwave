@@ -11,8 +11,8 @@ let db = null;
 
 const initializeDBAndServer = async () => {
   try {
-    database = await open({
-      fileName: dbPath,
+    db = await open({
+      filename: dbPath,
       driver: sqlite3.Database,
     });
     app.listen(3000, () => {
@@ -127,7 +127,7 @@ app.get("/user/tweets/feed/", authentication, async (request, response) => {
   const { username } = request;
   const followingPeopleIds = await getFollowingPeopleIdsOfUser(username);
   const getTweetQuery = `SELECT username,tweet,date_time as dateTime FROM user INNER JOIN tweet ON user.user_id = tweet.user_id WHERE user.user_id IN (${followingPeopleIds}) ORDER BY date_time DESC LIMIT 4;`;
-  const tweets = await bd.all(getTweetQuery);
+  const tweets = await db.all(getTweetQuery);
   response.send(tweets);
 });
 
