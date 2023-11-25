@@ -29,7 +29,7 @@ initializeDBAndServer();
 //GETTING USER FOLLOWING PEOPLE ID'S
 
 const getFollowingPeopleIdsOfUser = async (username) => {
-  const getTheFollowingPeopleQuery = `SELECT following_user_id FROM follower INNER JOIN user ON user.user_id = follower.follower_user_id WHERE username ='${username}';`;
+  const getTheFollowingPeopleQuery = `SELECT following_user_id FROM follower INNER JOIN user ON user.user_id = follower.follower_user_id WHERE user.username ='${username}';`;
   const followingPeople = await db.all(getTheFollowingPeopleQuery);
   const arrayOfIds = followingPeople.map(
     (eachUser) => eachUser.following_user_id
@@ -174,7 +174,7 @@ app.get("/tweets/:tweetId/replies/", authentication, tweetAccessVerification, as
 //API-9
 app.get("/user/tweets/", authentication, async (request, response) => {
   const { userId } = request;
-  const getTweetsQuery = `SELECT tweet,COUNT(DISTINCT like_id) AS likes, COUNT(DISTINCT reply_id) AS replies, date_time AS dateTime FROM tweet LEFT JOIN reply ON tweet.tweet_id = like.tweet_id WHERE tweet.user_id = '${userId}' GROUP BY tweet.tweet_id;`;
+  const getTweetsQuery = `SELECT tweet,COUNT(DISTINCT like_id) AS likes, COUNT(DISTINCT reply_id) AS replies, date_time AS dateTime FROM tweet LEFT JOIN reply ON tweet.tweet_id = reply.tweet_id LEFT JOIN like ON tweet.tweet_id = like.tweet_id WHERE tweet.user_id = '${userId}' GROUP BY tweet.tweet_id;`;
   const tweets = await db.all(getTweetsQuery);
   response.send(tweets);
 });
@@ -197,7 +197,7 @@ app.delete("/tweets/:tweetId/", authentication, async (request, response) => {
   const tweet = await db.get(getTheTweetQuery);
   console.log(tweet);
   if(tweet === undefined){
-      response.status(400);
+      response.status(401);
       response.send("Invalid Request");
   }else{
       const deleteTweetQuery = `DELETE FROM tweet WHERE tweet_id= '${tweetId}';`;
